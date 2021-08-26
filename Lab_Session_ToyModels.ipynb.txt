@@ -1,0 +1,241 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "%matplotlib inline\n",
+    "import scipy.linalg as scl"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In this notebook, we will apply the basic EDMD algorithm to analyze data from the linear stochastic differential equation:\n",
+    "$$ \\mathrm{d}X_t = -X_t \\mathrm{d}t + \\sigma(X_t) \\mathrm{d}W_t $$"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Simulation and Evolution of Densities\n",
+    "Let us first define a numerical integrator (i.e. the machinery to produce data), and then have a look at the evolution of probability distributions with time."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# This function realizes the standard Euler scheme\n",
+    "# for a linear stochastic differential equation:\n",
+    "def Euler_Scheme(x0, sigma, dt, m):\n",
+    "    # Prepare output:\n",
+    "    y = np.zeros(m)\n",
+    "    y[0] = x0\n",
+    "    # Initialize at x0:\n",
+    "    x = x0\n",
+    "    # Integrate:\n",
+    "    for kk in range(1, m):\n",
+    "        # Update:\n",
+    "        xn = x - dt * x + sigma * np.sqrt(dt)*np.random.randn()\n",
+    "        # Update current state:\n",
+    "        y[kk] = xn\n",
+    "        x = xn\n",
+    "    return y"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First, use the above function to produce 1000 simulations, each comprising discrete 1000 steps, at integration time step 1e-2, starting at $x_0 = 2$. Produce a histogram of the data after [10, 20, 50, 100, 200, 500] steps.\n",
+    "Then, repeat the experiment, but draw the initial condition from a normal distribution with mean zero, and standard deviation 0.5."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Settings:\n",
+    "m = 1000\n",
+    "dt = 1e-2\n",
+    "ntraj = 1000\n",
+    "\n",
+    "# Generate data:\n",
+    "X = np.zeros((ntraj, m))\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Time instances to be used for histogramming:\n",
+    "t_vec = np.array([10, 20, 50, 100, 200, 500])\n",
+    "# Bins for histogram:\n",
+    "xe = np.arange(-2.5, 3.51, 0.1)\n",
+    "xc = 0.5 * (xe[1:] + xe[:-1])\n",
+    "\n",
+    "# Histogram the data at different time instances:\n",
+    "plt.figure()\n",
+    "\n",
+    "qq = 0\n",
+    "for t in t_vec:\n",
+    "\n",
+    "\n",
+    "#plt.plot(xc, (1.0/np.sqrt(2*np.pi *0.5))*np.exp(-xc**2), \"k--\")\n",
+    "plt.xlabel(\"x\", fontsize=12)\n",
+    "plt.tick_params(labelsize=12)\n",
+    "plt.ylim([-.5, 1.5])\n",
+    "plt.legend(loc=2)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Estimating the Koopman Operator"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First, write a function to compute a matrix approximation for the Koopman operator. Inputs should the raw data, the time shifted raw data, a callable function to realize the basis set, and the number of basis functions:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def koopman_matrix(X, Y, psi, n):\n",
+    "    # Get info on data:\n",
+    "    m = X.shape[0]\n",
+    "    # Evaluate basis set on full data:\n",
+    "\n",
+    "    # Compute Koopman matrix:\n",
+    "    \n",
+    "    return K"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Produce 10,000 pairs $(x_l, y_l)$ by drawing $x_l$ from the invariant measure of our linear SDE. Compute each $y_l$ by running the dynamics over time $t = 0.1$ (10 discrete time steps). Then, estimate the Koopman matrix for the monomial basis of degree 10."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Produce the data:\n",
+    "m = 10000\n",
+    "x = np.sqrt(0.5) * np.random.randn(m)\n",
+    "y = np.zeros(m)\n",
+    "\n",
+    "# Define basis set:\n",
+    "n = 5\n",
+    "\n",
+    "# Compute Koopman matrix:\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Koopman-based Prediction\n",
+    "Diagonalize the Koopman matrix. Use the spectral mapping theorem to predict the eigenvalues at times $[0.1, 0.2, 0.3, ..., 2.0]$. Compare to the analytical values: the $k$-th eigenvalue at lag time $t$ is given by $\\exp(-k \\cdot t)$."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Diagonalize K:\n",
+    "d, V = \n",
+    "# Sort eigenvalues and eigenvectors:\n",
+    "\n",
+    "\n",
+    "# Plot eigenvalues at multiple lag times:\n",
+    "lags = nsteps * np.arange(1, 21)\n",
+    "plt.figure()\n",
+    "for k in range(1, 4):\n",
+    "    \n",
+    "    plt.plot(dt*lags, np.exp(- k * dt* lags), \"x\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Use the Koopman matrix to predict the variance of the process at times $[0.1, 0.2, 0.3, ..., 2.0]$, if started at $x$, as a function of $x$. The variance is\n",
+    "$\\mathbb{E}^x[(X_t)^2]$, which equals the Koopman operator applied to the function $x^2$. Remember this function is contained in your basis set."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Coefficient vector of x**2 with respect to monomial basis:\n",
+    "b = np.eye(n)[:, 2]\n",
+    "# Prepare output:\n",
+    "lag_coeffs = np.zeros((n, lags.shape[0]))\n",
+    "# Repeatedly apply Koopman matrix to coefficient vector:\n",
+    "\n",
+    "\n",
+    "# Plot coefficients of the variance as a function of t:\n",
+    "for ii in range(n):\n",
+    "    plt.plot(dt*lags, lag_coeffs[ii, :], \"o--\", label=r\"$x^{%d}$\"%ii)\n",
+    "plt.legend(loc=1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
